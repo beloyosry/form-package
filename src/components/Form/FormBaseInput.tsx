@@ -27,6 +27,8 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
     format,
 }: BaseFormInputProps<T>) => {
     const [showPassword, setShowPassword] = useState(false);
+    const [PhoneInputComponent, setPhoneInputComponent] = useState<any>(null);
+    const [isPhoneInputLoading, setIsPhoneInputLoading] = useState(false);
 
     const status = validation.error
         ? "error"
@@ -63,16 +65,25 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
         "dark:bg-black-500"
     );
 
-    const [PhoneInputComponent, setPhoneInputComponent] = useState<any>(null);
-
+    // Dynamically load PhoneInput only when needed
     useEffect(() => {
-        // Dynamically import only when needed
-        if (typeConfig.type === "phone" && !PhoneInputComponent) {
-            import("react-phone-input-2").then((module) => {
-                setPhoneInputComponent(() => module.default);
-            });
+        if (
+            typeConfig.type === "phone" &&
+            !PhoneInputComponent &&
+            !isPhoneInputLoading
+        ) {
+            setIsPhoneInputLoading(true);
+            import("react-phone-input-2")
+                .then((module) => {
+                    setPhoneInputComponent(() => module.default);
+                    setIsPhoneInputLoading(false);
+                })
+                .catch((error) => {
+                    console.error("Failed to load phone input:", error);
+                    setIsPhoneInputLoading(false);
+                });
         }
-    }, [typeConfig.type]);
+    }, [typeConfig.type, PhoneInputComponent, isPhoneInputLoading]);
 
     const renderInput = (field: ControllerRenderProps<T, any>) => {
         // Get the actual input type
@@ -158,6 +169,24 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
                 );
 
             case "phone":
+                // Show loading state or placeholder while phone input loads
+                if (!PhoneInputComponent) {
+                    return (
+                        <div
+                            className={cn(
+                                inputClassName,
+                                "flex items-center justify-center"
+                            )}
+                        >
+                            <span className="text-gray-400 text-sm">
+                                {isPhoneInputLoading
+                                    ? "Loading phone input..."
+                                    : "Loading..."}
+                            </span>
+                        </div>
+                    );
+                }
+
                 return (
                     <PhoneInputComponent
                         country={typeConfig.defaultCountry || "us"}
