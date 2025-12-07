@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
 import type { FieldValues, ControllerRenderProps } from "react-hook-form";
 import { inputVariants } from "../../styles/variants";
@@ -10,7 +10,6 @@ import { DateInput } from "../DateInput";
 import { FileInput } from "../FileInput";
 import { CheckBox } from "../CheckBox";
 import { OTP } from "../OTP";
-import PhoneInputComponent from "react-phone-input-2";
 import { BaseFormInputProps } from "./types";
 
 export const FormBaseInput = <T extends FieldValues = FieldValues>({
@@ -63,6 +62,17 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
             : "",
         "dark:bg-black-500"
     );
+
+    const [PhoneInputComponent, setPhoneInputComponent] = useState<any>(null);
+
+    useEffect(() => {
+        // Dynamically import only when needed
+        if (typeConfig.type === "phone" && !PhoneInputComponent) {
+            import("react-phone-input-2").then((module) => {
+                setPhoneInputComponent(() => module.default);
+            });
+        }
+    }, [typeConfig.type]);
 
     const renderInput = (field: ControllerRenderProps<T, any>) => {
         // Get the actual input type
@@ -152,7 +162,7 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
                     <PhoneInputComponent
                         country={typeConfig.defaultCountry || "us"}
                         value={field.value || ""}
-                        onChange={(phoneValue, country: any) => {
+                        onChange={(phoneValue: string, country: any) => {
                             const phoneCode = country.dialCode;
                             const phoneNumberOnly = phoneValue.substring(
                                 country.dialCode.length
