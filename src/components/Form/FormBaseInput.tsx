@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import { Controller } from "react-hook-form";
 import type { FieldValues, ControllerRenderProps } from "react-hook-form";
 import { inputVariants } from "../../styles/variants";
@@ -27,7 +27,8 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
     format,
 }: BaseFormInputProps<T>) => {
     const [showPassword, setShowPassword] = useState(false);
-    const [PhoneInputComponent, setPhoneInputComponent] = useState<any>(null);
+    const [PhoneInputComponent, setPhoneInputComponent] =
+        useState<ComponentType<any> | null>(null);
     const [isPhoneInputLoading, setIsPhoneInputLoading] = useState(false);
 
     const status = validation.error
@@ -74,8 +75,10 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
         ) {
             setIsPhoneInputLoading(true);
             import("react-phone-input-2")
-                .then((module) => {
-                    setPhoneInputComponent(() => module.default);
+                .then((mod) => {
+                    // Handle both CJS and ESM shapes
+                    const Comp = (mod as any).default || mod;
+                    setPhoneInputComponent(() => Comp as ComponentType<any>);
                     setIsPhoneInputLoading(false);
                 })
                 .catch((error) => {
