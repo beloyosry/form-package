@@ -1,7 +1,10 @@
-export { Form } from "./components/Form";
-export { useFormContext } from "./components/Form/FormContext";
+// Export the main Form component
+export { Form, default as FormDefault } from "./components/Form/Form";
 
-// Export types
+// Export context hook
+export { useFormContext, FormProvider } from "./components/Form/FormContext";
+
+// Export all types
 export type {
     FormProps,
     FormFieldProps,
@@ -13,6 +16,25 @@ export type {
     LabelConfig,
     ValidationConfig,
     LayoutConfig,
+    TextInputConfig,
+    EmailInputConfig,
+    PasswordInputConfig,
+    NumberInputConfig,
+    SearchInputConfig,
+    UrlInputConfig,
+    TelInputConfig,
+    DropdownInputConfig,
+    TextareaInputConfig,
+    CheckboxInputConfig,
+    OTPInputConfig,
+    PhoneInputConfig,
+    DateInputConfig,
+    FileInputConfig,
+    PhoneData,
+    BaseInputConfig,
+    ExtractTypeConfig,
+    FormFieldWrapperProps,
 } from "./components/Form/types";
 
+// Export utilities
 export { cn } from "./utils/cn";

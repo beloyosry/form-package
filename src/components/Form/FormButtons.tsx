@@ -1,14 +1,11 @@
 import { FC } from "react";
 import { FormButtonsProps } from "./types";
-import { useNavigate } from "react-router-dom";
 import { cn } from "../../utils/cn";
 
 export const FormButtons: FC<FormButtonsProps> = ({
     actions = {},
     style = {},
 }) => {
-    const navigate = useNavigate();
-
     const {
         submitText = "Submit",
         cancelText = "Cancel",
@@ -28,7 +25,8 @@ export const FormButtons: FC<FormButtonsProps> = ({
         if (onCancel) {
             onCancel();
         } else {
-            navigate(-1);
+            // Default behavior: go back in browser history
+            window.history.back();
         }
     };
 

@@ -40,17 +40,13 @@ function FormRoot<T extends FieldValues = FieldValues>({
     );
 }
 
-// Attach sub-components
-FormRoot.Field = FormField;
-FormRoot.Input = FormInputWrapper;
-FormRoot.Buttons = FormButtons;
+// Create the compound component with proper typing
+const Form = Object.assign(FormRoot, {
+    Field: FormField,
+    Input: FormInputWrapper,
+    Buttons: FormButtons,
+});
 
-// Export with proper typing
-export const Form = FormRoot as typeof FormRoot & {
-    Field: typeof FormField;
-    Input: typeof FormInputWrapper;
-    Buttons: typeof FormButtons;
-};
-
-// Also export as default
+// Export both named and default
+export { Form };
 export default Form;
