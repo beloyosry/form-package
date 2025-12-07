@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode } from "react";
-import { Control, FieldErrors, FieldValues } from "react-hook-form";
+import { type Control, FieldErrors, FieldValues } from "react-hook-form";
 
 interface FormContextValue<T extends FieldValues = FieldValues> {
     control: Control<T>;

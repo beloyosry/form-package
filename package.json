@@ -1,6 +1,6 @@
 {
     "name": "@syntaxflow/form",
-    "version": "1.0.12",
+    "version": "1.0.13",
     "description": "A comprehensive form library for React with Tailwind CSS v4",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
@@ -14,38 +14,13 @@
         "./styles.css": "./dist/styles.css"
     },
     "files": [
-        "dist"
+        "dist",
+        "README.md"
     ],
     "scripts": {
         "build": "tsup",
-        "prepublishOnly": "npm run build"
-    },
-    "peerDependencies": {
-        "react": "^19.2.1",
-        "react-dom": "^19.2.1",
-        "react-hook-form": "^7.68.0"
-    },
-    "peerDependenciesMeta": {
-        "react-router-dom": {
-            "optional": true
-        }
-    },
-    "dependencies": {
-        "class-variance-authority": "^0.7.1",
-        "clsx": "^2.1.1",
-        "date-fns": "^4.1.0",
-        "lucide-react": "^0.556.0",
-        "react-phone-input-2": "^2.15.1",
-        "tailwind-merge": "^3.4.0",
-        "tailwindcss": "^4.1.17"
-    },
-    "devDependencies": {
-        "@types/node": "^24.10.1",
-        "@types/react": "^19.2.7",
-        "@types/react-dom": "^19.2.3",
-        "tsup": "^8.5.1",
-        "typescript": "^5.9.3",
-        "react-hook-form": "^7.68.0"
+        "prepublishOnly": "npm run build",
+        "clean": "rm -rf dist node_modules package-lock.json"
     },
     "keywords": [
         "react",
@@ -55,12 +30,46 @@
         "tailwindcss",
         "form-components",
         "input",
-        "validation"
+        "validation",
+        "typescript",
+        "forms"
     ],
     "repository": {
         "type": "git",
         "url": "https://github.com/beloyosry/form-package"
     },
+    "bugs": {
+        "url": "https://github.com/beloyosry/form-package/issues"
+    },
+    "homepage": "https://github.com/beloyosry/form-package#readme",
     "author": "Syntax Flow",
-    "license": "MIT"
+    "license": "MIT",
+    "peerDependencies": {
+        "react": ">=18.0.0",
+        "react-dom": ">=18.0.0",
+        "react-hook-form": "^7.52.0"
+    },
+    "peerDependenciesMeta": {
+        "tailwindcss": {
+            "optional": true
+        }
+    },
+    "dependencies": {
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "date-fns": "^4.1.0",
+        "lucide-react": "^0.556.0",
+        "react-phone-input-2": "^2.15.1",
+        "tailwind-merge": "^3.4.0"
+    },
+    "devDependencies": {
+        "@types/node": "^24.10.1",
+        "@types/react": "^19.2.7",
+        "@types/react-dom": "^19.2.3",
+        "react": "^19.2.1",
+        "react-dom": "^19.2.1",
+        "react-hook-form": "^7.52.0",
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3"
+    }
 }

@@ -1,5 +1,5 @@
 import { FormEventHandler, ReactNode } from "react";
-import { Control, FieldValues, FieldErrors, Path } from "react-hook-form";
+import { type Control, FieldValues, FieldErrors, Path } from "react-hook-form";
 
 // ============================================
 // Main Form Props
