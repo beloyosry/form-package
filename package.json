@@ -1,6 +1,6 @@
 {
     "name": "@syntaxflow/form",
-    "version": "1.0.19",
+    "version": "1.0.20",
     "description": "A comprehensive form library for React with Tailwind CSS v4",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
