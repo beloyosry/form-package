@@ -1,15 +1,15 @@
 {
     "name": "@syntaxflow/form",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "description": "A comprehensive form library for React with Tailwind CSS v4",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
     "exports": {
         ".": {
+            "types": "./dist/index.d.ts",
             "import": "./dist/index.mjs",
-            "require": "./dist/index.js",
-            "types": "./dist/index.d.ts"
+            "require": "./dist/index.js"
         },
         "./styles.css": "./dist/styles.css"
     },
@@ -45,5 +45,21 @@
         "@types/react-dom": "^18.2.0",
         "tsup": "^8.0.0",
         "typescript": "^5.3.0"
-    }
+    },
+    "keywords": [
+        "react",
+        "form",
+        "react-hook-form",
+        "tailwind",
+        "tailwindcss",
+        "form-components",
+        "input",
+        "validation"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/beloyosry/form-package"
+    },
+    "author": "Syntax Flow",
+    "license": "MIT"
 }

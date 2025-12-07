@@ -1,16 +1,18 @@
 import { defineConfig } from "tsup";
+import { copyFileSync, existsSync } from "fs";
+import { join } from "path";
 
 export default defineConfig({
-    entry: ["src/index.ts"],
+    entry: {
+        index: "src/index.ts",
+    },
     format: ["cjs", "esm"],
     dts: true,
     splitting: false,
     sourcemap: true,
     clean: true,
-    treeshake: false, // Disable tree shaking to preserve exports
+    treeshake: false, // CRITICAL: Keep false to preserve exports
     minify: false,
-
-    // Mark all peer dependencies and heavy dependencies as external
     external: [
         "react",
         "react-dom",
@@ -21,28 +23,19 @@ export default defineConfig({
         "lucide-react",
         "react-phone-input-2",
     ],
-
-    // Bundle these smaller utility libraries
     noExternal: ["clsx", "class-variance-authority", "tailwind-merge"],
-
     esbuildOptions(options) {
         options.jsx = "automatic";
         options.platform = "neutral";
         options.mainFields = ["module", "main"];
-        // Preserve named exports
         options.treeShaking = false;
     },
+    onSuccess: async () => {
+        const srcCSS = join(process.cwd(), "src/styles/styles.css");
+        const distCSS = join(process.cwd(), "dist/styles.css");
 
-    // Copy CSS to dist folder
-    async onSuccess() {
-        const fs = require("fs");
-        const path = require("path");
-
-        const srcCSS = path.join(__dirname, "src/styles/styles.css");
-        const distCSS = path.join(__dirname, "dist/styles.css");
-
-        if (fs.existsSync(srcCSS)) {
-            fs.copyFileSync(srcCSS, distCSS);
+        if (existsSync(srcCSS)) {
+            copyFileSync(srcCSS, distCSS);
             console.log("✓ Copied styles.css to dist/");
         }
     },
