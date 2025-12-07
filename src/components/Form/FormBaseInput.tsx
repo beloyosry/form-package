@@ -10,7 +10,7 @@ import { DateInput } from "../DateInput";
 import { FileInput } from "../FileInput";
 import { CheckBox } from "../CheckBox";
 import { OTP } from "../OTP";
-import PhoneInput from "react-phone-input-2";
+import PhoneInputComponent from "react-phone-input-2";
 import { BaseFormInputProps } from "./types";
 
 export const FormBaseInput = <T extends FieldValues = FieldValues>({
@@ -149,7 +149,7 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
 
             case "phone":
                 return (
-                    <PhoneInput
+                    <PhoneInputComponent
                         country={typeConfig.defaultCountry || "us"}
                         value={field.value || ""}
                         onChange={(phoneValue, country: any) => {

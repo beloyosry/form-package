@@ -15,6 +15,7 @@ export default defineConfig({
         "react/jsx-runtime",
         "react-hook-form",
         "react-phone-input-2",
+        "react-phone-input-2/lib/style.css",
         "lucide-react",
         "date-fns",
         "class-variance-authority",
