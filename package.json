@@ -52,9 +52,6 @@
     "peerDependenciesMeta": {
         "tailwindcss": {
             "optional": true
-        },
-        "react-phone-input-2": {
-            "optional": true
         }
     },
     "dependencies": {
@@ -62,6 +59,7 @@
         "clsx": "^2.1.1",
         "date-fns": "^4.1.0",
         "lucide-react": "^0.556.0",
+        "react-phone-input-2": "^2.15.1",
         "tailwind-merge": "^3.4.0"
     },
     "devDependencies": {
@@ -71,7 +69,6 @@
         "react": "^19.2.1",
         "react-dom": "^19.2.1",
         "react-hook-form": "^7.52.0",
-        "react-phone-input-2": "^2.15.1",
         "tsup": "^8.5.1",
         "typescript": "^5.9.3"
     }
