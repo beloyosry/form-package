@@ -1,5 +1,5 @@
 import { useState } from "react";
-import * as RHF from "react-hook-form";
+import { Controller } from "react-hook-form";
 import type { FieldValues, ControllerRenderProps } from "react-hook-form";
 import { inputVariants } from "../../styles/variants";
 import { cn } from "../../utils/cn";
@@ -12,9 +12,6 @@ import { CheckBox } from "../CheckBox";
 import { OTP } from "../OTP";
 import PhoneInput from "react-phone-input-2";
 import { BaseFormInputProps } from "./types";
-
-// Extract Controller to ensure proper reference
-const Controller = RHF.Controller;
 
 export const FormBaseInput = <T extends FieldValues = FieldValues>({
     name,
