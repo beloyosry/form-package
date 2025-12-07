@@ -21,8 +21,8 @@
         "prepublishOnly": "npm run build"
     },
     "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^19.2.1",
+        "react-dom": "^19.2.1",
         "react-hook-form": "^7.0.0"
     },
     "peerDependenciesMeta": {
