@@ -7,8 +7,8 @@ export default defineConfig({
     splitting: false,
     sourcemap: true,
     clean: true,
-    treeshake: true,
-    minify: false, // Keep it readable for debugging
+    treeshake: false, // Disable tree shaking to preserve exports
+    minify: false,
 
     // Mark all peer dependencies and heavy dependencies as external
     external: [
@@ -28,8 +28,9 @@ export default defineConfig({
     esbuildOptions(options) {
         options.jsx = "automatic";
         options.platform = "neutral";
-        // Ensure proper module resolution
-        options.conditions = ["module", "import", "require", "default"];
+        options.mainFields = ["module", "main"];
+        // Preserve named exports
+        options.treeShaking = false;
     },
 
     // Copy CSS to dist folder

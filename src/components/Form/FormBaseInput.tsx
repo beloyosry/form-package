@@ -1,9 +1,6 @@
 import { useState } from "react";
-import {
-    Controller,
-    FieldValues,
-    ControllerRenderProps,
-} from "react-hook-form";
+import * as RHF from "react-hook-form";
+import type { FieldValues, ControllerRenderProps } from "react-hook-form";
 import { inputVariants } from "../../styles/variants";
 import { cn } from "../../utils/cn";
 import { FormFieldWrapper } from "./FormFieldWrapper";
@@ -15,6 +12,9 @@ import { CheckBox } from "../CheckBox";
 import { OTP } from "../OTP";
 import PhoneInput from "react-phone-input-2";
 import { BaseFormInputProps } from "./types";
+
+// Extract Controller to ensure proper reference
+const Controller = RHF.Controller;
 
 export const FormBaseInput = <T extends FieldValues = FieldValues>({
     name,
@@ -403,7 +403,7 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
                     successMessage={validation.successMessage}
                     className={layout.className}
                     parentClassName={layout.wrapperClassName}
-                    colSpan={layout.colSpan} // Pass colSpan here
+                    colSpan={layout.colSpan}
                     disabled={
                         typeConfig.type !== "otp" && "disabled" in typeConfig
                             ? typeConfig.disabled
