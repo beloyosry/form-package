@@ -1,0 +1,51 @@
+{
+    "name": "@syntaxflow/form",
+    "version": "1.0.3",
+    "description": "A comprehensive form library for React with Tailwind CSS v4",
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./styles.css": "./dist/styles.css"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "prepublishOnly": "npm run build"
+    },
+    "peerDependencies": {
+        "react": ">=18.0.0",
+        "react-dom": ">=18.0.0",
+        "react-hook-form": ">=7.0.0"
+    },
+    "peerDependenciesMeta": {
+        "tailwindcss": {
+            "optional": true
+        }
+    },
+    "dependencies": {
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "date-fns": "^4.1.0",
+        "lucide-react": "^0.556.0",
+        "react-phone-input-2": "^2.15.1",
+        "tailwind-merge": "^3.4.0"
+    },
+    "devDependencies": {
+        "@types/react": "^19.2.5",
+        "@types/react-dom": "^19.2.3",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.1",
+        "react-hook-form": "^7.54.2",
+        "tsup": "^8.5.1",
+        "typescript": "~5.9.3"
+    }
+}
