@@ -1,13 +1,16 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-    entry: ["src/index.ts"],
+    entry: {
+        index: "src/index.ts",
+    },
     format: ["cjs", "esm"],
     dts: true,
     splitting: false,
     sourcemap: true,
     clean: true,
     treeshake: true,
+    minify: false, // Don't minify to preserve structure
     external: [
         "react",
         "react-dom",
@@ -18,5 +21,8 @@ export default defineConfig({
     ],
     esbuildOptions(options) {
         options.jsx = "automatic";
+        options.banner = {
+            js: '"use client";',
+        };
     },
 });
