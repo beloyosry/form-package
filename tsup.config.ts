@@ -1,4 +1,6 @@
 import { defineConfig } from "tsup";
+import { copyFileSync, existsSync } from "fs";
+import { join } from "path";
 
 export default defineConfig({
     entry: ["src/index.ts"],
@@ -24,5 +26,14 @@ export default defineConfig({
     ],
     esbuildOptions(options) {
         options.jsx = "automatic";
+    },
+    onSuccess: async () => {
+        const srcCSS = join(process.cwd(), "src/styles/styles.css");
+        const distCSS = join(process.cwd(), "dist/styles.css");
+
+        if (existsSync(srcCSS)) {
+            copyFileSync(srcCSS, distCSS);
+            console.log("✓ Copied styles.css to dist/");
+        }
     },
 });
