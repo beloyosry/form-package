@@ -1,15 +1,10 @@
-import { ControllerRenderProps } from "react-hook-form";
-
+// src/components/FileInput/types.ts
 export interface FileInputProps {
-    field: ControllerRenderProps<any, any>;
-    label?: string;
-    icon?: React.ReactNode;
+    value: File | File[] | null;
+    onChange: (value: File | File[] | null) => void;
     accept?: string;
+    multiple?: boolean;
     maxSize?: number;
     disabled?: boolean;
     className?: string;
-    variant?: "default" | "filled" | "outlined" | "underlined";
-    size?: "sm" | "md" | "lg";
-    radius?: "none" | "sm" | "md" | "lg" | "full";
-    onKeyDown?: (e: React.KeyboardEvent) => void;
 }

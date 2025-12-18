@@ -1,87 +1,37 @@
-import React, {
-    useState,
-    useEffect,
-    useRef,
-    ChangeEvent,
-    KeyboardEvent,
-    ClipboardEvent,
-} from "react";
+// src/components/OTP/index.tsx
+import { useState, useRef, useEffect } from "react";
 import { OTPProps } from "./types";
 import { cn } from "../../utils/cn";
 
-export const OTP: React.FC<OTPProps> = ({
-    value: externalValue,
-    onChange: externalOnChange,
-    onComplete,
+export const OTP = ({
+    value,
+    onChange,
     length = 6,
     disabled = false,
-    autoFocus = true,
-    className = "",
-    classNames = {},
+    autoFocus = false,
     resendable = false,
     resendInterval = 60,
     onResend,
-    resendText = "Resend",
-    resendTimerText = (time) => `Resend in ${time}`,
-}) => {
-    const [internalOtp, setInternalOtp] = useState("");
-    const [timer, setTimer] = useState(resendInterval);
-    const [canResend, setCanResend] = useState(false);
+    onComplete,
+    size = "md",
+}: OTPProps) => {
+    const [countdown, setCountdown] = useState(0);
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-    const otp = externalValue !== undefined ? externalValue : internalOtp;
-
-    const updateOtp = React.useCallback(
-        (newOtp: string) => {
-            if (newOtp !== otp) {
-                setInternalOtp(newOtp);
-                if (externalOnChange) {
-                    externalOnChange(newOtp);
-                }
-            }
-        },
-        [externalOnChange, otp]
-    );
-
-    const inputRefs = useRef<(HTMLInputElement | null)[]>(
-        Array.from({ length }, () => null)
-    );
-
-    const formatTime = (timeInSeconds: number) => {
-        const minutes = Math.floor(timeInSeconds / 60);
-        const seconds = timeInSeconds % 60;
-        return `${minutes.toString().padStart(2, "0")}:${seconds
-            .toString()
-            .padStart(2, "0")}`;
+    const sizeClasses = {
+        xs: "h-8 w-8 text-sm",
+        sm: "h-10 w-10 text-base",
+        md: "h-12 w-12 text-lg",
+        lg: "h-14 w-14 text-xl",
+        xl: "h-16 w-16 text-2xl",
     };
 
     useEffect(() => {
-        if (!resendable || timer <= 0) return;
-
-        const interval = setInterval(() => {
-            setTimer((prevTimer) => {
-                const newTimer = prevTimer - 1;
-                if (newTimer <= 0) {
-                    setCanResend(true);
-                    clearInterval(interval);
-                }
-                return newTimer;
-            });
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, [timer, resendable]);
-
-    const prevOtpRef = useRef(otp);
-    useEffect(() => {
-        const isComplete =
-            otp.length === length && ![...otp].some((digit) => !digit);
-
-        if (isComplete && onComplete && otp !== prevOtpRef.current) {
-            onComplete(otp);
+        if (countdown > 0) {
+            const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+            return () => clearTimeout(timer);
         }
-
-        prevOtpRef.current = otp;
-    }, [otp, length, onComplete]);
+    }, [countdown]);
 
     useEffect(() => {
         if (autoFocus && inputRefs.current[0]) {
@@ -89,154 +39,113 @@ export const OTP: React.FC<OTPProps> = ({
         }
     }, [autoFocus]);
 
-    const handleResend = async () => {
-        if (!canResend || !onResend) return;
+    const handleChange = (index: number, newValue: string) => {
+        if (disabled) return;
 
-        try {
-            await onResend();
-            setTimer(resendInterval);
-            setCanResend(false);
-            updateOtp("");
-            inputRefs.current[0]?.focus();
-        } catch (error) {
-            console.error("Failed to resend OTP:", error);
-        }
-    };
+        const sanitizedValue = newValue.replace(/[^0-9]/g, "");
+        if (sanitizedValue.length > 1) return;
 
-    const handlePaste = (
-        e: ClipboardEvent<HTMLInputElement>,
-        index: number
-    ) => {
-        e.preventDefault();
-        const pasteData = e.clipboardData?.getData("text/plain") || "";
-        const pastedDigits = pasteData
-            .replace(/\D/g, "")
-            .slice(0, length - index);
+        const newOTP = value.split("");
+        newOTP[index] = sanitizedValue;
+        const newOTPString = newOTP.join("");
 
-        if (pastedDigits) {
-            const newOtp = otp.split("");
-            for (let i = 0; i < pastedDigits.length; i++) {
-                if (index + i < length) {
-                    newOtp[index + i] = pastedDigits[i];
-                }
-            }
-            const updatedOtp = newOtp.join("");
-            updateOtp(updatedOtp);
+        onChange(newOTPString);
 
-            const nextEmptyIndex = newOtp.findIndex(
-                (digit, idx) => idx >= index && !digit
-            );
-            const nextIndex =
-                nextEmptyIndex !== -1 ? nextEmptyIndex : length - 1;
-            inputRefs.current[nextIndex]?.focus();
-        }
-    };
-
-    const handleInputChange = (
-        e: ChangeEvent<HTMLInputElement>,
-        index: number
-    ) => {
-        const value = e.target.value;
-
-        if (value && !/^[0-9]$/.test(value)) {
-            return;
-        }
-
-        const newOtp = otp.split("");
-        newOtp[index] = value;
-        const otpString = newOtp.join("");
-        updateOtp(otpString);
-
-        if (value && index < length - 1) {
+        // Auto-focus next input
+        if (sanitizedValue && index < length - 1) {
             inputRefs.current[index + 1]?.focus();
+        }
+
+        // Check if complete
+        if (newOTPString.length === length && onComplete) {
+            onComplete(newOTPString);
         }
     };
 
     const handleKeyDown = (
-        e: KeyboardEvent<HTMLInputElement>,
-        index: number
+        index: number,
+        e: React.KeyboardEvent<HTMLInputElement>
     ) => {
-        if (e.key === "Backspace" && !otp[index] && index > 0) {
+        if (e.key === "Backspace" && !value[index] && index > 0) {
             inputRefs.current[index - 1]?.focus();
         } else if (e.key === "ArrowLeft" && index > 0) {
-            e.preventDefault();
             inputRefs.current[index - 1]?.focus();
         } else if (e.key === "ArrowRight" && index < length - 1) {
-            e.preventDefault();
             inputRefs.current[index + 1]?.focus();
         }
     };
 
+    const handlePaste = (e: React.ClipboardEvent) => {
+        e.preventDefault();
+        const pastedData = e.clipboardData
+            .getData("text")
+            .replace(/[^0-9]/g, "");
+        const newValue = pastedData.slice(0, length);
+        onChange(newValue);
+
+        // Focus last filled input
+        const nextIndex = Math.min(newValue.length, length - 1);
+        inputRefs.current[nextIndex]?.focus();
+
+        if (newValue.length === length && onComplete) {
+            onComplete(newValue);
+        }
+    };
+
+    const handleResend = () => {
+        if (countdown === 0 && onResend) {
+            onResend();
+            setCountdown(resendInterval);
+        }
+    };
+
     return (
-        <div className={cn("flex flex-col items-center w-full", className)}>
-            <div className={cn("mb-6 text-center", classNames.container)}>
-                <div
-                    className={cn(
-                        "flex justify-center gap-2 mb-6",
-                        classNames.inputsWrapper
-                    )}
-                >
-                    {Array.from({ length }, (_, index) => index).map(
-                        (index) => (
-                            <input
-                                key={index}
-                                ref={(el) => {
-                                    inputRefs.current[index] = el;
-                                }}
-                                type="text"
-                                maxLength={1}
-                                className={cn(
-                                    "otp-input",
-                                    disabled && "form-input-disabled",
-                                    classNames.input
-                                )}
-                                value={otp[index] || ""}
-                                disabled={disabled}
-                                onChange={(e) => handleInputChange(e, index)}
-                                onKeyDown={(e) => handleKeyDown(e, index)}
-                                onPaste={(e) => handlePaste(e, index)}
-                                onFocus={(e) => e.target.select()}
-                                onClick={(e) => {
-                                    const target = e.target as HTMLInputElement;
-                                    target.setSelectionRange(1, 1);
-                                }}
-                            />
-                        )
-                    )}
-                </div>
+        <div className="flex flex-col gap-4">
+            <div className="flex gap-2 justify-center" onPaste={handlePaste}>
+                {Array.from({ length }).map((_, index) => (
+                    <input
+                        key={index}
+                        ref={(el) => {
+                            inputRefs.current[index] = el;
+                        }}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={value[index] || ""}
+                        onChange={(e) => handleChange(index, e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(index, e)}
+                        disabled={disabled}
+                        className={cn(
+                            "rounded-lg border-2 text-center font-semibold transition-all duration-200",
+                            "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20",
+                            "disabled:cursor-not-allowed disabled:opacity-50",
+                            value[index]
+                                ? "border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900/20"
+                                : "border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-900",
+                            "text-gray-900 dark:text-gray-100",
+                            sizeClasses[size]
+                        )}
+                    />
+                ))}
             </div>
 
             {resendable && (
-                <div
-                    className={cn(
-                        "flex items-center justify-center gap-2 mt-2",
-                        classNames.resendContainer
-                    )}
-                >
-                    <span className="text-sm text-gray-500">
-                        Didn't receive code?
-                    </span>
-                    {canResend ? (
-                        <button
-                            type="button"
-                            className={cn(
-                                "text-sm text-primary-500 hover:text-primary-600 font-medium",
-                                classNames.resendButton
-                            )}
-                            onClick={handleResend}
-                        >
-                            {resendText}
-                        </button>
-                    ) : (
-                        <span
-                            className={cn(
-                                "text-sm text-gray-500",
-                                classNames.resendTimer
-                            )}
-                        >
-                            {resendTimerText(formatTime(timer))}
-                        </span>
-                    )}
+                <div className="flex justify-center">
+                    <button
+                        type="button"
+                        onClick={handleResend}
+                        disabled={countdown > 0 || disabled}
+                        className={cn(
+                            "text-sm font-medium transition-colors",
+                            countdown > 0 || disabled
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                        )}
+                    >
+                        {countdown > 0
+                            ? `Resend in ${countdown}s`
+                            : "Resend Code"}
+                    </button>
                 </div>
             )}
         </div>

@@ -1,100 +1,39 @@
-import { FormEventHandler, ReactNode } from "react";
-import { type Control, FieldValues, FieldErrors, Path } from "react-hook-form";
+// src/components/Form/types.ts
+import type {
+    Control,
+    ControllerRenderProps,
+    FieldErrors,
+    FieldValues,
+    Path,
+} from "react-hook-form";
+import type { ResponsiveValue } from "../../config/formConfig";
+import type { InputVariants, ButtonVariants } from "../../styles/variants";
+import type { InputPreset } from "../../styles/variants";
 
-// ============================================
-// Main Form Props
-// ============================================
-export interface FormProps<T extends FieldValues = FieldValues> {
-    children: ReactNode;
-    control: Control<T>;
-    errors: FieldErrors<T>;
-    onSubmit?: FormEventHandler;
-    layout?: {
-        className?: string;
-        formClassName?: string;
-        removeBorder?: boolean;
-        noPadding?: boolean;
-    };
-}
-
-// ============================================
-// Form Field Props
-// ============================================
-export interface FormFieldProps {
-    children: ReactNode;
-    layout?: {
-        title?: string;
-        subtitle?: string;
-        separator?: boolean;
-        cols?: "1" | "2" | "3" | "4" | "5" | "6";
-    };
-    style?: {
-        className?: string;
-        titleClassName?: string;
-        subtitleClassName?: string;
-        separatorClassName?: string;
-        gridClassName?: string;
-    };
-}
-
-// ============================================
-// Form Buttons Props
-// ============================================
-export interface FormButtonsProps {
-    actions?: {
-        submitText?: string;
-        cancelText?: string;
-        isLoading?: boolean;
-        disabled?: boolean;
-        removeCancel?: boolean;
-        onConfirm?: () => void;
-        onCancel?: () => void;
-    };
-    style?: {
-        className?: string;
-        childClassName?: string;
-    };
-}
-
-// ============================================
-// Form Field Wrapper Props
-// ============================================
-export interface FormFieldWrapperProps {
-    children: React.ReactNode;
-    label?: string;
-    required?: boolean;
-    disabled?: boolean;
-    error?: string;
-    successMessage?: string;
-    hint?: string;
-    className?: string;
-    parentClassName?: string;
-    labelClassName?: string;
-    errorClassName?: string;
-    hintClassName?: string;
-    activeLabel?: boolean;
-    colSpan?: number; // Add this
-}
-
-// ============================================
-// Form Input Interfaces
-// ============================================
-
-// ============================================
-// Base Configuration Interfaces
-// ============================================
-
-export interface PhoneData {
-    fullNumber: string;
-    phoneCode: string;
-    phoneNumber: string;
-}
+// ============================================================================
+// Style Configuration Types
+// ============================================================================
 
 export interface StyleConfig {
-    variant?: "default" | "filled" | "outlined" | "underlined";
-    size?: "sm" | "md" | "lg";
-    radius?: "none" | "sm" | "md" | "lg" | "full";
+    variant?: InputVariants["variant"];
+    size?: ResponsiveValue<InputVariants["size"]>;
+    radius?: InputVariants["radius"];
+    preset?: InputPreset;
+    fullWidth?: boolean;
+    className?: string;
 }
+
+export interface ButtonStyleConfig {
+    variant?: ButtonVariants["variant"];
+    size?: ResponsiveValue<ButtonVariants["size"]>;
+    radius?: ButtonVariants["radius"];
+    fullWidth?: boolean;
+    className?: string;
+}
+
+// ============================================================================
+// Label Configuration
+// ============================================================================
 
 export interface LabelConfig {
     text?: string;
@@ -104,30 +43,41 @@ export interface LabelConfig {
     className?: string;
 }
 
+// ============================================================================
+// Validation Configuration
+// ============================================================================
+
 export interface ValidationConfig {
     error?: string;
-    showError?: boolean;
     successMessage?: string;
+    showError?: boolean;
+    showSuccess?: boolean;
 }
+
+// ============================================================================
+// Layout Configuration
+// ============================================================================
 
 export interface LayoutConfig {
-    colSpan?: number;
-    fullWidth?: boolean;
     className?: string;
-    wrapperClassName?: string;
+    formClassName?: string;
+    gap?: ResponsiveValue<string>;
+    columns?: ResponsiveValue<number>;
+    gridCols?: ResponsiveValue<number>; // Alias for columns
+    removeBorder?: boolean;
+    noPadding?: boolean;
 }
+
+// ============================================================================
+// Input Type Configurations
+// ============================================================================
 
 export interface BaseInputConfig {
+    type: string;
     placeholder?: string;
     disabled?: boolean;
-    readOnly?: boolean;
-    autoFocus?: boolean;
     className?: string;
 }
-
-// ============================================
-// Type-Specific Configurations
-// ============================================
 
 export interface TextInputConfig extends BaseInputConfig {
     type: "text";
@@ -160,72 +110,57 @@ export interface TelInputConfig extends BaseInputConfig {
     type: "tel";
 }
 
-export interface DropdownInputConfig extends BaseInputConfig {
-    type: "dropdown";
-    options: { key: string; value: string }[];
-    width?: "full" | "fit";
-    emptyText?: string;
-    searchable?: boolean;
-    searchPlaceholder?: string;
-}
-
 export interface TextareaInputConfig extends BaseInputConfig {
     type: "textarea";
     rows?: number;
-    cols?: number;
-    resize?: "none" | "both" | "horizontal" | "vertical";
-    maxLength?: number;
 }
 
-export interface CheckboxInputConfig {
+export interface DropdownInputConfig extends BaseInputConfig {
+    type: "dropdown";
+    options: { label: string; value: string }[];
+}
+
+export interface CheckboxInputConfig
+    extends Omit<BaseInputConfig, "placeholder"> {
     type: "checkbox";
     label?: string;
-    disabled?: boolean;
-    className?: string;
     checkedIcon?: React.ReactNode;
     uncheckedIcon?: React.ReactNode;
 }
 
-export interface OTPInputConfig {
+export interface OTPInputConfig extends Omit<BaseInputConfig, "placeholder"> {
     type: "otp";
     length?: number;
-    onComplete?: (code: string) => void;
     resendable?: boolean;
     resendInterval?: number;
-    onResend?: () => Promise<void>;
-    disabled?: boolean;
+    onResend?: () => void;
+    onComplete?: (value: string) => void;
     autoFocus?: boolean;
-    className?: string;
+}
+
+export interface PhoneData {
+    fullNumber: string;
+    phoneCode: string;
+    phoneNumber: string;
 }
 
 export interface PhoneInputConfig extends BaseInputConfig {
     type: "phone";
-    onPhoneExtracted?: (data: PhoneData) => void;
-    defaultCountry?: string;
     preferredCountries?: string[];
+    onPhoneExtracted?: (data: PhoneData) => void;
 }
 
 export interface DateInputConfig extends BaseInputConfig {
     type: "date";
-    format?: "date" | "datetime" | "time";
-    minDate?: Date;
-    maxDate?: Date;
-    highlightedDates?: Date[];
+    mode?: "single" | "range" | "multiple";
 }
 
-export interface FileInputConfig {
+export interface FileInputConfig extends BaseInputConfig {
     type: "file";
-    label?: string;
-    icon?: React.ReactNode;
     accept?: string;
+    multiple?: boolean;
     maxSize?: number;
-    disabled?: boolean;
-    className?: string;
 }
-
-// ============================================
-// Union Type for All Input Configurations
-// ============================================
 
 export type InputTypeConfig =
     | TextInputConfig
@@ -235,33 +170,33 @@ export type InputTypeConfig =
     | SearchInputConfig
     | UrlInputConfig
     | TelInputConfig
-    | DropdownInputConfig
     | TextareaInputConfig
+    | DropdownInputConfig
     | CheckboxInputConfig
     | OTPInputConfig
     | PhoneInputConfig
     | DateInputConfig
     | FileInputConfig;
 
-// ============================================
-// Main FormInput Props
-// ============================================
+export type ExtractTypeConfig<T extends string> = Extract<
+    InputTypeConfig,
+    { type: T }
+>;
 
-export interface BaseFormInputProps<T extends FieldValues = FieldValues> {
-    // React Hook Form integration
-    name: Path<T>;
-    control: Control<T>;
+// ============================================================================
+// Form Component Props
+// ============================================================================
 
-    // Type configuration (contains both type and its specific config)
+export interface BaseFormInputProps<
+    TFieldValues extends FieldValues = FieldValues
+> {
+    name: Path<TFieldValues>;
+    control: Control<TFieldValues>;
     type: InputTypeConfig;
-
-    // Common configurations
     style?: StyleConfig;
     label?: LabelConfig;
     validation?: ValidationConfig;
     layout?: LayoutConfig;
-
-    // Callbacks
     onChange?: (value: any) => void;
     onBlur?: () => void;
     onFocus?: () => void;
@@ -269,19 +204,52 @@ export interface BaseFormInputProps<T extends FieldValues = FieldValues> {
     format?: (value: string) => string;
 }
 
-export type FormInputProps<T extends FieldValues = FieldValues> = Omit<
-    BaseFormInputProps<T>,
-    "control"
-> & {
-    name: Path<T>;
-    validation?: Omit<BaseFormInputProps<T>["validation"], "error">;
-};
+export interface FormInputProps<TFieldValues extends FieldValues = FieldValues>
+    extends Omit<BaseFormInputProps<TFieldValues>, "control"> {
+    control?: Control<TFieldValues>;
+}
 
-// ============================================
-// Helper type to extract config from type
-// ============================================
+export interface FormFieldProps<
+    TFieldValues extends FieldValues = FieldValues
+> {
+    name: Path<TFieldValues>;
+    control: Control<TFieldValues>;
+    label?: LabelConfig;
+    validation?: ValidationConfig;
+    layout?: LayoutConfig;
+    style?: StyleConfig;
+    children:
+        | ((field: ControllerRenderProps<TFieldValues>) => React.ReactElement)
+        | React.ReactElement
+        | null;
+}
 
-export type ExtractTypeConfig<T extends InputTypeConfig["type"]> = Extract<
-    InputTypeConfig,
-    { type: T }
->;
+export interface FormFieldWrapperProps {
+    children: React.ReactNode;
+    label?: LabelConfig;
+    validation?: ValidationConfig;
+    layout?: LayoutConfig;
+    labelClassName?: string;
+    size?: InputVariants["size"];
+}
+
+export interface FormButtonsProps {
+    submitText?: string;
+    cancelText?: string;
+    onCancel?: () => void;
+    submitDisabled?: boolean;
+    cancelDisabled?: boolean;
+    loading?: boolean;
+    submitStyle?: ButtonStyleConfig;
+    cancelStyle?: ButtonStyleConfig;
+    layout?: "horizontal" | "vertical" | "space-between";
+    className?: string;
+}
+
+export interface FormProps<TFieldValues extends FieldValues = FieldValues> {
+    children: React.ReactNode;
+    control: Control<TFieldValues>;
+    errors?: FieldErrors<TFieldValues>;
+    onSubmit?: (e?: React.FormEvent<HTMLFormElement>) => void;
+    layout?: LayoutConfig;
+}

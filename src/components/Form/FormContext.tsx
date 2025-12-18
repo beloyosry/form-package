@@ -1,33 +1,39 @@
-import { createContext, useContext, ReactNode } from "react";
-import { type Control, FieldErrors, FieldValues } from "react-hook-form";
+// src/components/Form/FormContext.tsx
+import { createContext, useContext } from "react";
+import type { Control, FieldErrors, FieldValues } from "react-hook-form";
 
-interface FormContextValue<T extends FieldValues = FieldValues> {
-    control: Control<T>;
-    errors: FieldErrors<T>;
+interface FormContextValue<TFieldValues extends FieldValues = FieldValues> {
+    control: Control<TFieldValues>;
+    errors?: FieldErrors<TFieldValues>;
 }
 
-// Use unknown instead of any for better type safety
-const FormContext = createContext<FormContextValue<FieldValues> | null>(null);
+const FormContext = createContext<FormContextValue<any> | null>(null);
 
-export const useFormContext = <T extends FieldValues = FieldValues>() => {
+export const useFormContext = <
+    TFieldValues extends FieldValues = FieldValues
+>() => {
     const context = useContext(FormContext);
     if (!context) {
-        throw new Error("Form components must be used within a Form component");
+        throw new Error("useFormContext must be used within a FormProvider");
     }
-    // Safe cast because we know the structure matches
-    return context as unknown as FormContextValue<T>;
+    return context as FormContextValue<TFieldValues>;
 };
 
-// Create a custom provider component
-export const FormProvider = <T extends FieldValues = FieldValues>({
+interface FormProviderProps<TFieldValues extends FieldValues = FieldValues> {
+    children: React.ReactNode;
+    control: Control<TFieldValues>;
+    errors?: FieldErrors<TFieldValues>;
+}
+
+export const FormProvider = <TFieldValues extends FieldValues = FieldValues>({
     children,
-    value,
-}: {
-    children: ReactNode;
-    value: FormContextValue<T>;
-}) => {
+    control,
+    errors,
+}: FormProviderProps<TFieldValues>) => {
     return (
-        <FormContext.Provider value={value as FormContextValue<FieldValues>}>
+        <FormContext.Provider
+            value={{ control, errors } as FormContextValue<TFieldValues>}
+        >
             {children}
         </FormContext.Provider>
     );

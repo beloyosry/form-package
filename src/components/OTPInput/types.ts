@@ -1,3 +1,4 @@
+// src/components/OTPInput/types.ts
 import { ControllerRenderProps } from "react-hook-form";
 
 export interface OTPInputProps {
@@ -6,7 +7,8 @@ export interface OTPInputProps {
     onComplete?: (code: string) => void;
     resendable?: boolean;
     resendInterval?: number;
-    onResend?: () => Promise<void>;
+    onResend?: () => Promise<void> | void;
     disabled?: boolean;
-    size?: "sm" | "md" | "lg";
+    autoFocus?: boolean;
+    size?: "xs" | "sm" | "md" | "lg" | "xl";
 }

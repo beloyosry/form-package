@@ -1,8 +1,18 @@
-import { useEffect, useState, type ComponentType } from "react";
-import { Controller } from "react-hook-form";
-import type { FieldValues, ControllerRenderProps } from "react-hook-form";
-import { inputVariants } from "../../styles/variants";
+// src/components/Form/FormBaseInput.tsx
+import { useState, useMemo } from "react";
+import * as RHF from "react-hook-form";
+import type { ControllerRenderProps, FieldValues } from "react-hook-form";
+import {
+    inputVariants,
+    labelVariants,
+    inputPresets,
+} from "../../styles/variants";
 import { cn } from "../../utils/cn";
+import { getFormConfig } from "../../config/formConfig";
+import {
+    resolveResponsiveValue,
+    getResponsiveClasses,
+} from "../../utils/responsive";
 import { FormFieldWrapper } from "./FormFieldWrapper";
 import { EyeIcon, EyeOffIcon, Search, X } from "lucide-react";
 import { DropdownInput } from "../DropdownInput";
@@ -10,9 +20,12 @@ import { DateInput } from "../DateInput";
 import { FileInput } from "../FileInput";
 import { CheckBox } from "../CheckBox";
 import { OTP } from "../OTP";
+import PhoneInput from "react-phone-input-2";
 import { BaseFormInputProps } from "./types";
 
-export const FormBaseInput = <T extends FieldValues = FieldValues>({
+const Controller = RHF.Controller;
+
+export const FormBaseInput = <TFieldValues extends FieldValues = FieldValues>({
     name,
     control,
     type: typeConfig,
@@ -25,71 +38,91 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
     onFocus,
     onKeyDown,
     format,
-}: BaseFormInputProps<T>) => {
+}: BaseFormInputProps<TFieldValues>) => {
     const [showPassword, setShowPassword] = useState(false);
-    const [PhoneInputComponent, setPhoneInputComponent] =
-        useState<ComponentType<any> | null>(null);
-    const [isPhoneInputLoading, setIsPhoneInputLoading] = useState(false);
+    const globalConfig = getFormConfig();
 
+    // Determine status
     const status = validation.error
         ? "error"
         : validation.successMessage
         ? "success"
         : "default";
 
-    const styleConfig = {
-        variant: style.variant || "default",
-        size: style.size || "md",
-        radius: style.radius || "md",
-    };
+    // Merge global config with component props
+    const styleConfig = useMemo(() => {
+        const preset = style.preset ? inputPresets[style.preset] : null;
+
+        return {
+            variant:
+                style.variant ||
+                preset?.variant ||
+                globalConfig.defaults?.variant ||
+                "default",
+            size:
+                style.size ||
+                preset?.size ||
+                globalConfig.defaults?.size ||
+                "md",
+            radius:
+                style.radius ||
+                preset?.radius ||
+                globalConfig.defaults?.radius ||
+                "md",
+            fullWidth:
+                style.fullWidth !== undefined
+                    ? style.fullWidth
+                    : globalConfig.defaults?.fullWidth !== undefined
+                    ? globalConfig.defaults.fullWidth
+                    : true,
+        };
+    }, [style, globalConfig]);
 
     const labelConfig = {
         text: label.text,
-        show: label.show !== false,
-        required: label.required || false,
+        show:
+            label.show !== undefined
+                ? label.show
+                : globalConfig.label?.show !== false,
+        required: label.required || globalConfig.label?.required || false,
         requiredText: label.requiredText,
-        className: label.className,
+        className: label.className || globalConfig.classNames?.label,
     };
 
+    // Resolve size once to ensure consistency
+    const resolvedSize = resolveResponsiveValue(styleConfig.size, "md");
+
+    // Build input className with responsive support
     const inputClassName = cn(
         inputVariants({
             variant: styleConfig.variant,
-            size: styleConfig.size,
+            size: resolvedSize,
             radius: styleConfig.radius,
             status,
+            fullWidth: styleConfig.fullWidth,
         }),
+        // Add responsive size classes
+        getResponsiveClasses(styleConfig.size, ""),
         typeConfig.type !== "checkbox" &&
             typeConfig.type !== "otp" &&
             "className" in typeConfig
             ? typeConfig.className
             : "",
-        "dark:bg-black-500"
+        globalConfig.classNames?.input,
+        "dark:bg-gray-900"
     );
 
-    // Dynamically load PhoneInput only when needed
-    useEffect(() => {
-        if (
-            typeConfig.type === "phone" &&
-            !PhoneInputComponent &&
-            !isPhoneInputLoading
-        ) {
-            setIsPhoneInputLoading(true);
-            import("react-phone-input-2")
-                .then((mod) => {
-                    // Handle both CJS and ESM shapes
-                    const Comp = (mod as any).default || mod;
-                    setPhoneInputComponent(() => Comp as ComponentType<any>);
-                    setIsPhoneInputLoading(false);
-                })
-                .catch((error) => {
-                    console.error("Failed to load phone input:", error);
-                    setIsPhoneInputLoading(false);
-                });
-        }
-    }, [typeConfig.type, PhoneInputComponent, isPhoneInputLoading]);
+    // Build label className
+    const labelClassName = cn(
+        labelVariants({
+            size: resolvedSize,
+            status,
+            required: labelConfig.required,
+        }),
+        labelConfig.className
+    );
 
-    const renderInput = (field: ControllerRenderProps<T, any>) => {
-        // Get the actual input type
+    const renderInput = (field: ControllerRenderProps<TFieldValues>) => {
         const inputType =
             typeConfig.type === "password"
                 ? showPassword
@@ -102,16 +135,18 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
                 return (
                     <textarea
                         {...field}
-                        placeholder={typeConfig.placeholder}
-                        disabled={typeConfig.disabled}
-                        readOnly={typeConfig.readOnly}
-                        rows={typeConfig.rows || 3}
-                        cols={typeConfig.cols}
-                        maxLength={typeConfig.maxLength}
-                        className={cn(
-                            inputClassName,
-                            typeConfig.resize && `resize-${typeConfig.resize}`
-                        )}
+                        className={inputClassName}
+                        placeholder={
+                            "placeholder" in typeConfig
+                                ? typeConfig.placeholder
+                                : ""
+                        }
+                        disabled={
+                            "disabled" in typeConfig
+                                ? typeConfig.disabled
+                                : false
+                        }
+                        rows={"rows" in typeConfig ? typeConfig.rows : 4}
                         onChange={(e) => {
                             const value = format
                                 ? format(e.target.value)
@@ -131,34 +166,33 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
             case "dropdown":
                 return (
                     <DropdownInput
-                        field={field}
-                        config={typeConfig}
-                        variant={styleConfig.variant}
-                        size={styleConfig.size}
-                        radius={styleConfig.radius}
-                        onKeyDown={onKeyDown}
-                        format={format}
+                        {...field}
+                        options={typeConfig.options}
+                        placeholder={typeConfig.placeholder}
+                        disabled={typeConfig.disabled}
+                        className={inputClassName}
+                        size={resolvedSize}
                     />
                 );
 
             case "checkbox":
                 return (
                     <CheckBox
-                        checked={!!field.value}
+                        checked={field.value}
                         onChange={() => field.onChange(!field.value)}
                         label={typeConfig.label}
                         disabled={typeConfig.disabled}
                         className={typeConfig.className}
                         checkedIcon={typeConfig.checkedIcon}
                         uncheckedIcon={typeConfig.uncheckedIcon}
-                        size={styleConfig.size}
+                        size={resolvedSize}
                     />
                 );
 
             case "otp":
                 return (
                     <OTP
-                        value={field.value || ""}
+                        value={field.value}
                         onChange={(value) => field.onChange(value)}
                         onComplete={typeConfig.onComplete}
                         length={typeConfig.length}
@@ -167,41 +201,20 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
                         onResend={typeConfig.onResend}
                         disabled={typeConfig.disabled}
                         autoFocus={typeConfig.autoFocus}
-                        size={styleConfig.size}
+                        size={resolvedSize}
                     />
                 );
 
             case "phone":
-                // Show loading state or placeholder while phone input loads
-                if (!PhoneInputComponent) {
-                    return (
-                        <div
-                            className={cn(
-                                inputClassName,
-                                "flex items-center justify-center"
-                            )}
-                        >
-                            <span className="text-gray-400 text-sm">
-                                {isPhoneInputLoading
-                                    ? "Loading phone input..."
-                                    : "Loading..."}
-                            </span>
-                        </div>
-                    );
-                }
-
                 return (
-                    <PhoneInputComponent
-                        country={typeConfig.defaultCountry || "us"}
-                        value={field.value || ""}
-                        onChange={(phoneValue: string, country: any) => {
+                    <PhoneInput
+                        value={field.value}
+                        onChange={(phoneValue, country: any) => {
                             const phoneCode = country.dialCode;
                             const phoneNumberOnly = phoneValue.substring(
                                 country.dialCode.length
                             );
-
                             field.onChange(phoneValue);
-
                             if (typeConfig.onPhoneExtracted) {
                                 typeConfig.onPhoneExtracted({
                                     fullNumber: phoneValue,
@@ -210,7 +223,7 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
                                 });
                             }
                         }}
-                        inputClass="w-full! rounded-lg! h-11! focus:ring-primary-500! focus:border-2! focus:border-primary-500! shadow-none!"
+                        inputClass={cn(inputClassName, "w-full!")}
                         buttonClass="focus:ring-primary-500! focus:border-2! focus:border-primary-500! shadow-none!"
                         dropdownClass="border border-primary-500!"
                         disabled={typeConfig.disabled}
@@ -224,105 +237,35 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
             case "date":
                 return (
                     <DateInput
-                        field={field}
-                        format={typeConfig.format}
-                        minDate={typeConfig.minDate}
-                        maxDate={typeConfig.maxDate}
-                        highlightedDates={typeConfig.highlightedDates}
-                        disabled={typeConfig.disabled}
+                        {...field}
+                        mode={typeConfig.mode}
                         placeholder={typeConfig.placeholder}
-                        className={typeConfig.className}
-                        variant={styleConfig.variant}
-                        size={styleConfig.size}
-                        radius={styleConfig.radius}
+                        disabled={typeConfig.disabled}
+                        className={inputClassName}
+                        size={resolvedSize}
                     />
                 );
 
             case "file":
                 return (
                     <FileInput
-                        field={field}
-                        label={
-                            "label" in typeConfig ? typeConfig.label : undefined
-                        }
-                        icon={
-                            "icon" in typeConfig ? typeConfig.icon : undefined
-                        }
-                        accept={
-                            "accept" in typeConfig
-                                ? typeConfig.accept
-                                : undefined
-                        }
-                        maxSize={
-                            "maxSize" in typeConfig
-                                ? typeConfig.maxSize
-                                : undefined
-                        }
-                        disabled={
-                            "disabled" in typeConfig
-                                ? typeConfig.disabled
-                                : undefined
-                        }
-                        className={
-                            "className" in typeConfig
-                                ? typeConfig.className
-                                : undefined
-                        }
-                        variant={styleConfig.variant}
-                        size={styleConfig.size}
-                        radius={styleConfig.radius}
-                        onKeyDown={onKeyDown}
+                        {...field}
+                        accept={typeConfig.accept}
+                        multiple={typeConfig.multiple}
+                        maxSize={typeConfig.maxSize}
+                        disabled={typeConfig.disabled}
+                        className={inputClassName}
                     />
                 );
 
             case "search":
                 return (
                     <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                         <input
                             {...field}
-                            type="text"
-                            placeholder={typeConfig.placeholder}
-                            disabled={typeConfig.disabled}
-                            readOnly={typeConfig.readOnly}
-                            autoFocus={typeConfig.autoFocus}
-                            className={cn(inputClassName, "pr-10")}
-                            onChange={(e) => {
-                                const value = format
-                                    ? format(e.target.value)
-                                    : e.target.value;
-                                field.onChange(value);
-                                onChange?.(value);
-                            }}
-                            onBlur={() => {
-                                field.onBlur();
-                                onBlur?.();
-                            }}
-                            onFocus={onFocus}
-                            onKeyDown={onKeyDown}
-                        />
-                        <Search
-                            size={20}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                        />
-                        {field.value && (
-                            <button
-                                type="button"
-                                onClick={() => field.onChange("")}
-                                className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                                <X size={16} />
-                            </button>
-                        )}
-                    </div>
-                );
-
-            default:
-                // Handle standard HTML input types
-                return (
-                    <div className="relative">
-                        <input
-                            {...field}
-                            type={inputType}
+                            type="search"
+                            className={cn(inputClassName, "pl-10")}
                             placeholder={
                                 "placeholder" in typeConfig
                                     ? typeConfig.placeholder
@@ -333,35 +276,6 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
                                     ? typeConfig.disabled
                                     : false
                             }
-                            readOnly={
-                                "readOnly" in typeConfig
-                                    ? typeConfig.readOnly
-                                    : false
-                            }
-                            autoFocus={
-                                "autoFocus" in typeConfig
-                                    ? typeConfig.autoFocus
-                                    : false
-                            }
-                            min={
-                                typeConfig.type === "number"
-                                    ? typeConfig.min
-                                    : undefined
-                            }
-                            max={
-                                typeConfig.type === "number"
-                                    ? typeConfig.max
-                                    : undefined
-                            }
-                            step={
-                                typeConfig.type === "number"
-                                    ? typeConfig.step
-                                    : undefined
-                            }
-                            className={cn(
-                                inputClassName,
-                                typeConfig.type === "password" && "pr-10"
-                            )}
                             onChange={(e) => {
                                 const value = format
                                     ? format(e.target.value)
@@ -376,17 +290,59 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
                             onFocus={onFocus}
                             onKeyDown={onKeyDown}
                         />
+                        {field.value && (
+                            <button
+                                type="button"
+                                onClick={() => field.onChange("")}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                );
 
+            default:
+                return (
+                    <div className="relative">
+                        <input
+                            {...field}
+                            type={inputType}
+                            className={inputClassName}
+                            placeholder={
+                                "placeholder" in typeConfig
+                                    ? typeConfig.placeholder
+                                    : ""
+                            }
+                            disabled={
+                                "disabled" in typeConfig
+                                    ? typeConfig.disabled
+                                    : false
+                            }
+                            onChange={(e) => {
+                                const value = format
+                                    ? format(e.target.value)
+                                    : e.target.value;
+                                field.onChange(value);
+                                onChange?.(value);
+                            }}
+                            onBlur={() => {
+                                field.onBlur();
+                                onBlur?.();
+                            }}
+                            onFocus={onFocus}
+                            onKeyDown={onKeyDown}
+                        />
                         {typeConfig.type === "password" && (
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                             >
                                 {showPassword ? (
-                                    <EyeOffIcon size={20} />
+                                    <EyeOffIcon className="w-5 h-5" />
                                 ) : (
-                                    <EyeIcon size={20} />
+                                    <EyeIcon className="w-5 h-5" />
                                 )}
                             </button>
                         )}
@@ -397,27 +353,30 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
 
     if (typeConfig.type === "checkbox") {
         return (
-            <Controller
+            <Controller<TFieldValues>
                 name={name}
                 control={control}
                 render={({ field }) => (
-                    <div
-                        className={cn("flex flex-col", layout.wrapperClassName)}
-                        style={{
-                            gridColumn: layout.colSpan
-                                ? `span ${layout.colSpan}`
-                                : undefined,
-                        }}
-                    >
+                    <div className={cn("flex flex-col", layout.className)}>
                         {renderInput(field)}
                         {validation.showError !== false && validation.error && (
-                            <p className="text-xs text-red-500 mt-1">
-                                *{validation.error}
+                            <p
+                                className={cn(
+                                    "text-sm text-red-600 dark:text-red-400 mt-1",
+                                    globalConfig.classNames?.error
+                                )}
+                            >
+                                {validation.error}
                             </p>
                         )}
                         {label.requiredText && (
-                            <p className="text-xs text-gray-500 mt-1">
-                                *{label.requiredText}
+                            <p
+                                className={cn(
+                                    "text-xs text-gray-500 dark:text-gray-400 mt-1",
+                                    globalConfig.classNames?.helper
+                                )}
+                            >
+                                {label.requiredText}
                             </p>
                         )}
                     </div>
@@ -427,31 +386,18 @@ export const FormBaseInput = <T extends FieldValues = FieldValues>({
     }
 
     return (
-        <Controller
-            name={name}
-            control={control}
-            render={({ field }) => (
-                <FormFieldWrapper
-                    label={labelConfig.show ? labelConfig.text : undefined}
-                    required={labelConfig.required}
-                    error={
-                        validation.showError !== false
-                            ? validation.error
-                            : undefined
-                    }
-                    successMessage={validation.successMessage}
-                    className={layout.className}
-                    parentClassName={layout.wrapperClassName}
-                    colSpan={layout.colSpan}
-                    disabled={
-                        typeConfig.type !== "otp" && "disabled" in typeConfig
-                            ? typeConfig.disabled
-                            : false
-                    }
-                >
-                    {renderInput(field)}
-                </FormFieldWrapper>
-            )}
-        />
+        <FormFieldWrapper
+            label={labelConfig}
+            validation={validation}
+            layout={layout}
+            labelClassName={labelClassName}
+            size={resolvedSize}
+        >
+            <Controller<TFieldValues>
+                name={name}
+                control={control}
+                render={({ field }) => renderInput(field)}
+            />
+        </FormFieldWrapper>
     );
 };

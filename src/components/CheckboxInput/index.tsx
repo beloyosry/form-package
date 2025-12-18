@@ -1,3 +1,4 @@
+// src/components/CheckboxInput/index.tsx
 import { CheckBox } from "../CheckBox";
 import { CheckboxInputProps } from "./types";
 
@@ -21,7 +22,6 @@ export const CheckboxInput: React.FC<CheckboxInputProps> = ({
             checkedIcon={checkedIcon}
             uncheckedIcon={uncheckedIcon}
             size={size}
-            variant={variant}
         />
     );
 };

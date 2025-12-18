@@ -1,100 +1,78 @@
-import { useEffect, useRef, useState } from "react";
-import { Calendar, formatDate } from "../Calendar";
-import { cn } from "../../utils/cn";
-import { inputVariants } from "../../styles/variants";
-import { CalendarIcon } from "lucide-react";
+// src/components/DateInput/index.tsx
 import { DateInputProps } from "./types";
+import { cn } from "../../utils/cn";
+import { Calendar } from "lucide-react";
+import { format } from "date-fns";
 
-export const DateInput: React.FC<DateInputProps> = ({
-    field,
-    format: dateFormat = "datetime",
-    minDate,
-    maxDate,
-    highlightedDates = [],
-    disabled = false,
+export const DateInput = ({
+    value,
+    onChange,
+    mode = "single",
     placeholder = "Select date",
-    className = "",
-    variant = "default",
+    disabled = false,
+    className,
     size = "md",
-    radius = "md",
-}) => {
-    const [showCalendar, setShowCalendar] = useState(false);
-    const calendarRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (
-                calendarRef.current &&
-                !calendarRef.current.contains(e.target as Node)
-            ) {
-                setShowCalendar(false);
-            }
-        };
-
-        if (showCalendar) {
-            setTimeout(() => {
-                document.addEventListener("mousedown", handleClickOutside);
-            }, 0);
-        }
-
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [showCalendar]);
-
-    const handleDateSelect = (date: Date) => {
-        field.onChange(date.toISOString());
-        setShowCalendar(false);
+}: DateInputProps) => {
+    const sizeClasses = {
+        xs: "text-xs px-2 py-1 h-7",
+        sm: "text-sm px-3 py-1.5 h-9",
+        md: "text-base px-4 py-2 h-11",
+        lg: "text-lg px-5 py-3 h-13",
+        xl: "text-xl px-6 py-4 h-16",
     };
 
-    const formatDisplayValue = (value: string) => {
-        if (!value) return "";
-        const date = new Date(value);
-        switch (dateFormat) {
-            case "date":
-                return formatDate.readableDate(date);
-            case "datetime":
-                return formatDate.dateTime(date);
-            case "time":
-                return date.toLocaleTimeString();
-            default:
-                return formatDate.dateTime(date);
+    const iconSizeClasses = {
+        xs: "w-3 h-3",
+        sm: "w-4 h-4",
+        md: "w-5 h-5",
+        lg: "w-6 h-6",
+        xl: "w-7 h-7",
+    };
+
+    const formatDate = (date: string | Date) => {
+        if (!date) return "";
+        try {
+            const dateObj = typeof date === "string" ? new Date(date) : date;
+            return format(dateObj, "MMM dd, yyyy");
+        } catch {
+            return "";
         }
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+        onChange(newValue);
     };
 
     return (
         <div className="relative">
-            <button
-                type="button"
-                onClick={() => !disabled && setShowCalendar(!showCalendar)}
+            <input
+                type="date"
+                value={
+                    typeof value === "string"
+                        ? value
+                        : format(value, "yyyy-MM-dd")
+                }
+                onChange={handleChange}
                 disabled={disabled}
+                placeholder={placeholder}
                 className={cn(
-                    inputVariants({ variant, size, radius, status: "default" }),
-                    "flex items-center justify-between",
+                    "w-full rounded-md border transition-all duration-200",
+                    "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100",
+                    "border-gray-300 dark:border-gray-700",
+                    "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20",
+                    "disabled:cursor-not-allowed disabled:opacity-50",
+                    "pr-10",
+                    sizeClasses[size],
                     className
                 )}
-            >
-                <span className={cn(!field.value && "text-gray-400")}>
-                    {field.value
-                        ? formatDisplayValue(field.value)
-                        : placeholder}
-                </span>
-                <CalendarIcon size={20} className="text-gray-400" />
-            </button>
-
-            {showCalendar && !disabled && (
-                <div ref={calendarRef} className="absolute z-50 mt-2">
-                    <Calendar
-                        selectedDate={
-                            field.value ? new Date(field.value) : undefined
-                        }
-                        onDateSelect={handleDateSelect}
-                        highlightedDates={highlightedDates}
-                        minDate={minDate}
-                        maxDate={maxDate}
-                    />
-                </div>
-            )}
+            />
+            <Calendar
+                className={cn(
+                    "absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400",
+                    iconSizeClasses[size]
+                )}
+            />
         </div>
     );
 };

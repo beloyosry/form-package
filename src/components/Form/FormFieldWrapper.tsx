@@ -1,70 +1,62 @@
-import { FC } from "react";
-import { cn } from "../../utils/cn";
+// src/components/Form/FormFieldWrapper.tsx
 import { FormFieldWrapperProps } from "./types";
+import { cn } from "../../utils/cn";
+import { getFormConfig } from "../../config/formConfig";
+import { helperTextVariants } from "../../styles/variants";
 
-export const FormFieldWrapper: FC<FormFieldWrapperProps> = ({
+export const FormFieldWrapper = ({
     children,
     label,
-    required = false,
-    disabled = false,
-    error,
-    successMessage,
-    hint,
-    className = "",
-    parentClassName = "",
-    labelClassName = "",
-    errorClassName = "",
-    hintClassName = "",
-    activeLabel = true,
-    colSpan, // Add this
-}) => {
+    validation = {},
+    layout = {},
+    labelClassName,
+    size = "md",
+}: FormFieldWrapperProps) => {
+    const globalConfig = getFormConfig();
+
+    const status = validation.error
+        ? "error"
+        : validation.successMessage
+        ? "success"
+        : "default";
+
+    const showError = validation.showError !== false && validation.error;
+    const showSuccess = validation.showSuccess && validation.successMessage;
+
     return (
-        <div
-            className={cn("w-full", parentClassName)}
-            style={{
-                gridColumn: colSpan ? `span ${colSpan}` : undefined,
-            }}
-        >
-            {label && activeLabel && (
-                <label
-                    className={cn(
-                        "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2",
-                        disabled && "opacity-50 cursor-not-allowed",
-                        labelClassName
-                    )}
-                >
-                    {label}
-                    {required && <span className="text-red-500 ml-1">*</span>}
-                </label>
+        <div className={cn("flex flex-col w-full", layout.className)}>
+            {label?.show !== false && label?.text && (
+                <label className={labelClassName}>{label.text}</label>
             )}
-
-            <div className={cn("relative", className)}>{children}</div>
-
-            {hint && !error && !successMessage && (
+            {children}
+            {showError && (
                 <p
                     className={cn(
-                        "mt-1 text-sm text-gray-500 dark:text-gray-400",
-                        hintClassName
+                        helperTextVariants({ status: "error" }),
+                        globalConfig.classNames?.error
                     )}
                 >
-                    {hint}
+                    {validation.error}
                 </p>
             )}
-
-            {error && (
+            {showSuccess && (
                 <p
                     className={cn(
-                        "mt-1 text-sm text-red-600 dark:text-red-400",
-                        errorClassName
+                        helperTextVariants({ status: "success" }),
+                        globalConfig.classNames?.success
                     )}
                 >
-                    {error}
+                    {validation.successMessage}
                 </p>
             )}
-
-            {successMessage && !error && (
-                <p className="mt-1 text-sm text-green-600 dark:text-green-400">
-                    {successMessage}
+            {label?.requiredText && (
+                <p
+                    className={cn(
+                        helperTextVariants({ status: "default" }),
+                        globalConfig.classNames?.helper
+                    )}
+                >
+                    {label.requiredText}
                 </p>
             )}
         </div>

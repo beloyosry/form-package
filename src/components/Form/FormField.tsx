@@ -1,76 +1,79 @@
-import { FC } from "react";
+// src/components/Form/FormField.tsx (ALTERNATIVE - More restrictive)
+import { ReactElement } from "react";
+import {
+    Controller,
+    FieldValues,
+    ControllerRenderProps,
+} from "react-hook-form";
 import { FormFieldProps } from "./types";
+import { FormFieldWrapper } from "./FormFieldWrapper";
 import { cn } from "../../utils/cn";
+import { getFormConfig } from "../../config/formConfig";
+import { labelVariants } from "../../styles/variants";
+import { resolveResponsiveValue } from "../../utils/responsive";
 
-export const FormField: FC<FormFieldProps> = ({
-    children,
+export const FormField = <TFieldValues extends FieldValues = FieldValues>({
+    name,
+    control,
+    label = {},
+    validation = {},
     layout = {},
+    children,
     style = {},
-}) => {
-    const { title, subtitle, separator = false, cols = "3" } = layout;
+}: FormFieldProps<TFieldValues>) => {
+    const globalConfig = getFormConfig();
 
-    const {
-        className,
-        titleClassName,
-        subtitleClassName,
-        separatorClassName,
-        gridClassName,
-    } = style;
+    const status = validation.error
+        ? "error"
+        : validation.successMessage
+        ? "success"
+        : "default";
 
-    const getGridColsClass = () => {
-        switch (cols) {
-            case "1":
-                return "lg:grid-cols-1";
-            case "2":
-                return "lg:grid-cols-2";
-            case "3":
-                return "lg:grid-cols-3";
-            case "4":
-                return "lg:grid-cols-4";
-            case "5":
-                return "lg:grid-cols-5";
-            case "6":
-                return "lg:grid-cols-6";
-            default:
-                return "lg:grid-cols-3";
-        }
+    const resolvedSize = resolveResponsiveValue(
+        style.size || globalConfig.defaults?.size,
+        "md"
+    );
+
+    const labelConfig = {
+        text: label.text,
+        show:
+            label.show !== undefined
+                ? label.show
+                : globalConfig.label?.show !== false,
+        required: label.required || globalConfig.label?.required || false,
+        requiredText: label.requiredText,
+        className: label.className || globalConfig.classNames?.label,
     };
 
+    const labelClassName = cn(
+        labelVariants({
+            size: resolvedSize,
+            status,
+            required: labelConfig.required,
+        }),
+        labelConfig.className
+    );
+
     return (
-        <div className={cn("w-full", className)}>
-            {/* Title Section */}
-            {title && (
-                <div className={cn("mb-6", titleClassName)}>
-                    <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                        {title}
-                    </h2>
-                    {subtitle && (
-                        <p
-                            className={cn(
-                                "mt-1 text-sm text-gray-600 dark:text-gray-400",
-                                subtitleClassName
-                            )}
-                        >
-                            {subtitle}
-                        </p>
-                    )}
-                </div>
-            )}
-
-            {/* Separator */}
-            {separator && (
-                <div className={cn("separator", separatorClassName)} />
-            )}
-
-            {/* Grid Container */}
-            <div
-                className={cn(
-                    `grid md:grid-cols-2 ${getGridColsClass()} gap-4 px-3`,
-                    gridClassName
-                )}
-            >
-                {children}
-            </div>
-        </div>
+        <FormFieldWrapper
+            label={labelConfig}
+            validation={validation}
+            layout={layout}
+            labelClassName={labelClassName}
+            size={resolvedSize}
+        >
+            <Controller<TFieldValues>
+                name={name}
+                control={control}
+                render={({ field }) => {
+                    if (typeof children === "function") {
+                        return children(
+                            field as ControllerRenderProps<TFieldValues>
+                        );
+                    }
+                    return children || <></>;
+                }}
+            />
+        </FormFieldWrapper>
     );
 };

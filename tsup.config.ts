@@ -1,3 +1,4 @@
+// tsup.config.ts
 import { defineConfig } from "tsup";
 import { copyFileSync, existsSync } from "fs";
 import { join } from "path";

@@ -1,15 +1,10 @@
-import { ControllerRenderProps } from "react-hook-form";
-
+// src/components/DateInput/types.ts
 export interface DateInputProps {
-    field: ControllerRenderProps<any, any>;
-    format?: "date" | "datetime" | "time";
-    minDate?: Date;
-    maxDate?: Date;
-    highlightedDates?: Date[];
-    disabled?: boolean;
+    value: string | Date;
+    onChange: (value: string | Date) => void;
+    mode?: "single" | "range" | "multiple";
     placeholder?: string;
+    disabled?: boolean;
     className?: string;
-    variant?: "default" | "filled" | "outlined" | "underlined";
-    size?: "sm" | "md" | "lg";
-    radius?: "none" | "sm" | "md" | "lg" | "full";
+    size?: "xs" | "sm" | "md" | "lg" | "xl";
 }

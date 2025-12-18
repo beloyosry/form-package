@@ -1,19 +1,12 @@
+// src/components/CheckBox/types.ts
 export interface CheckBoxProps {
     checked: boolean;
-    onChange: () => void;
+    onChange: (checked: boolean) => void;
     label?: string;
     disabled?: boolean;
     className?: string;
-    classNames?: {
-        container?: string;
-        checkbox?: string;
-        active?: string;
-        inactive?: string;
-        checkedIcon?: string;
-        label?: string;
-    };
     checkedIcon?: React.ReactNode;
     uncheckedIcon?: React.ReactNode;
-    size?: "sm" | "md" | "lg";
+    size?: "xs" | "sm" | "md" | "lg" | "xl";
     variant?: "default" | "outlined" | "filled";
 }

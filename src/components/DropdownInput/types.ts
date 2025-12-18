@@ -1,12 +1,16 @@
-import { ControllerRenderProps } from "react-hook-form";
-import { FormInputProps } from "../Form/types";
+// src/components/DropdownInput/types.ts
+export interface DropdownOption {
+    label: string;
+    value: string;
+}
 
 export interface DropdownInputProps {
-    field: ControllerRenderProps<any, any>;
-    config: Extract<FormInputProps["type"], { type: "dropdown" }>;
-    variant?: "default" | "filled" | "outlined" | "underlined";
-    size?: "sm" | "md" | "lg";
-    radius?: "none" | "sm" | "md" | "lg" | "full";
-    onKeyDown?: (e: React.KeyboardEvent) => void;
-    format?: (value: string) => string;
+    value: string;
+    onChange: (value: string) => void;
+    options: DropdownOption[];
+    placeholder?: string;
+    disabled?: boolean;
+    className?: string;
+    size?: "xs" | "sm" | "md" | "lg" | "xl";
+    title?: string;
 }

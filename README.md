@@ -1,16 +1,19 @@
 # @syntaxflow/form
 
-A comprehensive, type-safe form input library for React with Tailwind CSS v4 support.
+A comprehensive, type-safe form library for React with Tailwind CSS v4, global configuration, responsive support, and beautiful variants.
 
-## Features
+## ✨ Features
 
-✅ **Full TypeScript Support** - Complete type safety with IntelliSense
-✅ **React Hook Form Integration** - Seamless integration with validation
-✅ **Tailwind CSS v4** - Modern styling with CSS-first configuration
-✅ **Compound Components** - Clean, intuitive API
-✅ **15+ Input Types** - Text, Email, Password, Phone, OTP, Date, Dropdown, and more
-✅ **Responsive Grid System** - Flexible layout with dynamic columns
-✅ **Dark Mode Support** - Built-in dark mode
-✅ **Customizable** - Extensive styling and configuration options
+- 🎨 **5 Beautiful Variants** - Default, Filled, Outlined, Ghost, and Soft styles
+- 📱 **Fully Responsive** - Breakpoint-specific styling (xs, sm, md, lg, xl, 2xl)
+- ⚙️ **Global Configuration** - Set defaults once, use everywhere
+- 🎯 **Type-Safe** - Complete TypeScript support with IntelliSense
+- 🔄 **React Hook Form** - Seamless integration with validation
+- 🌓 **Dark Mode** - Built-in dark mode support
+- 📦 **15+ Input Types** - Text, Email, Password, Phone, OTP, Date, File, and more
+- 🎭 **Preset Styles** - Quick styling with modern, minimal, classic, rounded, and soft presets
+- 🎨 **CVA Integration** - Powered by class-variance-authority for flexible variants
+- 🔧 **Highly Customizable** - Override any style at component or global level
 
-## Installation
+## 📦 Installation
+

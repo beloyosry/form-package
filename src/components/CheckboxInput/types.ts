@@ -1,3 +1,4 @@
+// src/components/CheckboxInput/types.ts
 import { ControllerRenderProps } from "react-hook-form";
 
 export interface CheckboxInputProps {
@@ -7,6 +8,6 @@ export interface CheckboxInputProps {
     className?: string;
     checkedIcon?: React.ReactNode;
     uncheckedIcon?: React.ReactNode;
-    size?: "sm" | "md" | "lg";
+    size?: "xs" | "sm" | "md" | "lg" | "xl";
     variant?: "default" | "outlined" | "filled";
 }

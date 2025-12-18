@@ -1,3 +1,4 @@
+// src/components/Calendar/index.tsx
 import { useState, useEffect, useMemo } from "react";
 import { CalendarProps } from "./types";
 import { cva } from "class-variance-authority";
@@ -14,7 +15,7 @@ export const formatDate = {
 };
 
 const calendarVariants = cva(
-    "bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-lg",
+    "rounded-3xl p-6 shadow-lg transition-all duration-200",
     {
         variants: {
             size: {
@@ -22,9 +23,18 @@ const calendarVariants = cva(
                 small: "w-[280px]",
                 large: "w-[420px]",
             },
+            variant: {
+                default:
+                    "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700",
+                outlined:
+                    "bg-white dark:bg-gray-800 border-2 border-primary-500 dark:border-primary-400",
+                filled: "bg-gray-100 dark:bg-gray-900 border-0",
+                soft: "bg-primary-50 dark:bg-primary-900/20 border-0",
+            },
         },
         defaultVariants: {
             size: "default",
+            variant: "default",
         },
     }
 );
@@ -38,11 +48,12 @@ const dayVariants = cva(
                     "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700",
                 weekend:
                     "text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700",
-                selected: "bg-primary-500 text-white hover:bg-primary-600",
+                selected:
+                    "bg-primary-500 text-white hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700",
                 highlighted:
                     "bg-primary-100 text-gray-700 hover:bg-primary-200 dark:bg-primary-900/30",
                 inactive: "text-gray-300 cursor-not-allowed dark:text-gray-600",
-                today: "text-gray-900 font-bold ring-2 ring-primary-500 dark:text-white",
+                today: "text-gray-900 font-bold ring-2 ring-primary-500 dark:text-white dark:ring-primary-400",
                 disabled:
                     "text-gray-300 cursor-not-allowed hover:bg-transparent dark:text-gray-600",
             },
@@ -63,12 +74,12 @@ export const Calendar = ({
     className,
     classNames = {},
     size = "default",
+    variant = "default",
     firstDayOfWeek = 1,
 }: CalendarProps) => {
-    // Use useMemo to prevent initialDate from causing re-renders
     const memoizedInitialDate = useMemo(
         () => initialDate,
-        [initialDate.getTime()] // Only re-compute when the actual time changes
+        [initialDate.getTime()]
     );
 
     const [selectedDate, setSelectedDate] = useState(
@@ -76,20 +87,11 @@ export const Calendar = ({
     );
     const [currentDate, setCurrentDate] = useState(memoizedInitialDate);
 
-    // Update selected date when external prop changes
     useEffect(() => {
         if (externalSelectedDate) {
             setSelectedDate(externalSelectedDate);
         }
-    }, [externalSelectedDate?.getTime()]); // Use getTime() to compare date values
-
-    // Remove this useEffect - it's causing the infinite loop
-    // The initial date should only be set once during initialization
-    // useEffect(() => {
-    //     if (initialDate) {
-    //         setCurrentDate(initialDate);
-    //     }
-    // }, [initialDate]);
+    }, [externalSelectedDate?.getTime()]);
 
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
@@ -174,17 +176,17 @@ export const Calendar = ({
             const date = new Date(currentYear, currentMonth, day);
             const disabled = isDateDisabled(date);
 
-            let variant: any = "default";
+            let dayVariant: any = "default";
             if (disabled) {
-                variant = "disabled";
+                dayVariant = "disabled";
             } else if (isSelected(day)) {
-                variant = "selected";
+                dayVariant = "selected";
             } else if (isHighlighted(day)) {
-                variant = "highlighted";
+                dayVariant = "highlighted";
             } else if (isToday(day)) {
-                variant = "today";
+                dayVariant = "today";
             } else if (isWeekend((dayOfWeek + day - 1) % 7)) {
-                variant = "weekend";
+                dayVariant = "weekend";
             }
 
             days.push(
@@ -194,13 +196,14 @@ export const Calendar = ({
                     onClick={() => handleDateClick(day)}
                     disabled={disabled}
                     className={cn(
-                        dayVariants({ variant }),
+                        dayVariants({ variant: dayVariant }),
                         classNames.dayCell,
-                        variant === "selected" && classNames.daySelected,
-                        variant === "highlighted" && classNames.dayHighlighted,
-                        variant === "today" && classNames.dayToday,
-                        variant === "disabled" && classNames.dayDisabled,
-                        variant === "weekend" && classNames.dayWeekend
+                        dayVariant === "selected" && classNames.daySelected,
+                        dayVariant === "highlighted" &&
+                            classNames.dayHighlighted,
+                        dayVariant === "today" && classNames.dayToday,
+                        dayVariant === "disabled" && classNames.dayDisabled,
+                        dayVariant === "weekend" && classNames.dayWeekend
                     )}
                 >
                     {day}
@@ -222,7 +225,7 @@ export const Calendar = ({
     return (
         <div
             className={cn(
-                calendarVariants({ size }),
+                calendarVariants({ size, variant }),
                 classNames.container,
                 className
             )}
@@ -242,7 +245,7 @@ export const Calendar = ({
                 </button>
                 <h2
                     className={cn(
-                        "text-lg font-semibold",
+                        "text-lg font-semibold text-gray-900 dark:text-gray-100",
                         classNames.monthYear
                     )}
                 >
@@ -266,15 +269,13 @@ export const Calendar = ({
                 {daysOfWeek.map((day, index) => (
                     <div
                         key={day + index}
-                        className={`text-center text-sm font-medium text-gray-500 ${
-                            (
-                                firstDayOfWeek === 1
-                                    ? index >= 5
-                                    : index === 0 || index === 6
-                            )
-                                ? "text-red-500"
-                                : ""
-                        }`}
+                        className={cn(
+                            "text-center text-sm font-medium text-gray-500 dark:text-gray-400",
+                            (firstDayOfWeek === 1
+                                ? index >= 5
+                                : index === 0 || index === 6) &&
+                                "text-red-500 dark:text-red-400"
+                        )}
                     >
                         {day}
                     </div>

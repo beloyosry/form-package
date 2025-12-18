@@ -1,47 +1,96 @@
-import { FC } from "react";
+// src/components/Form/FormButtons.tsx
 import { FormButtonsProps } from "./types";
 import { cn } from "../../utils/cn";
+import { getFormConfig } from "../../config/formConfig";
+import { buttonVariants } from "../../styles/variants";
+import {
+    resolveResponsiveValue,
+    getResponsiveClasses,
+} from "../../utils/responsive";
 
-export const FormButtons: FC<FormButtonsProps> = ({
-    actions = {},
-    style = {},
-}) => {
-    const {
-        submitText = "Submit",
-        cancelText = "Cancel",
-        isLoading = false,
-        disabled = false,
-        removeCancel = false,
-        onConfirm,
-        onCancel,
-    } = actions;
+export const FormButtons = ({
+    submitText = "Submit",
+    cancelText = "Cancel",
+    onCancel,
+    submitDisabled = false,
+    cancelDisabled = false,
+    loading = false,
+    submitStyle = {},
+    cancelStyle = {},
+    layout = "horizontal",
+    className,
+}: FormButtonsProps) => {
+    const globalConfig = getFormConfig();
 
-    const { className, childClassName } = style;
-
-    const submitButtonText =
-        submitText.charAt(0).toUpperCase() + submitText.slice(1);
-
-    const handleCancel = () => {
-        if (onCancel) {
-            onCancel();
-        } else {
-            // Default behavior: go back in browser history
-            window.history.back();
-        }
+    const submitConfig = {
+        variant:
+            submitStyle.variant || globalConfig.button?.variant || "primary",
+        size: submitStyle.size || globalConfig.button?.size || "md",
+        radius: submitStyle.radius || globalConfig.button?.radius || "md",
+        fullWidth:
+            submitStyle.fullWidth !== undefined ? submitStyle.fullWidth : false,
     };
 
+    const cancelConfig = {
+        variant: cancelStyle.variant || "outline",
+        size: cancelStyle.size || globalConfig.button?.size || "md",
+        radius: cancelStyle.radius || globalConfig.button?.radius || "md",
+        fullWidth:
+            cancelStyle.fullWidth !== undefined ? cancelStyle.fullWidth : false,
+    };
+
+    const containerClass = cn(
+        "flex gap-3 mt-6",
+        layout === "vertical" && "flex-col",
+        layout === "space-between" && "justify-between",
+        layout === "horizontal" && "justify-end",
+        className
+    );
+
     return (
-        <div className={cn("flex gap-4 pt-4", className)}>
+        <div className={containerClass}>
+            {onCancel && (
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    disabled={cancelDisabled || loading}
+                    className={cn(
+                        buttonVariants({
+                            variant: cancelConfig.variant,
+                            size: resolveResponsiveValue(
+                                cancelConfig.size,
+                                "md"
+                            ),
+                            radius: cancelConfig.radius,
+                            fullWidth: cancelConfig.fullWidth,
+                        }),
+                        getResponsiveClasses(cancelConfig.size, ""),
+                        cancelStyle.className,
+                        globalConfig.classNames?.button
+                    )}
+                >
+                    {cancelText}
+                </button>
+            )}
             <button
                 type="submit"
-                disabled={disabled || isLoading}
-                onClick={onConfirm}
-                className={cn("form-button-submit flex-1", childClassName)}
+                disabled={submitDisabled || loading}
+                className={cn(
+                    buttonVariants({
+                        variant: submitConfig.variant,
+                        size: resolveResponsiveValue(submitConfig.size, "md"),
+                        radius: submitConfig.radius,
+                        fullWidth: submitConfig.fullWidth,
+                    }),
+                    getResponsiveClasses(submitConfig.size, ""),
+                    submitStyle.className,
+                    globalConfig.classNames?.button
+                )}
             >
-                {isLoading ? (
-                    <span className="flex items-center justify-center gap-2">
+                {loading ? (
+                    <div className="flex items-center gap-2">
                         <svg
-                            className="animate-spin h-5 w-5"
+                            className="animate-spin h-4 w-4"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -60,23 +109,12 @@ export const FormButtons: FC<FormButtonsProps> = ({
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                             ></path>
                         </svg>
-                        Loading...
-                    </span>
+                        <span>Loading...</span>
+                    </div>
                 ) : (
-                    submitButtonText
+                    submitText
                 )}
             </button>
-
-            {!removeCancel && (
-                <button
-                    type="button"
-                    onClick={handleCancel}
-                    disabled={isLoading}
-                    className={cn("form-button-cancel", childClassName)}
-                >
-                    {cancelText}
-                </button>
-            )}
         </div>
     );
 };

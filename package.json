@@ -1,7 +1,7 @@
 {
     "name": "@syntaxflow/form",
-    "version": "1.0.20",
-    "description": "A comprehensive form library for React with Tailwind CSS v4",
+    "version": "1.1.0",
+    "description": "A comprehensive form library for React with Tailwind CSS v4, responsive support, and global configuration",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
@@ -11,11 +11,17 @@
             "import": "./dist/index.mjs",
             "require": "./dist/index.js"
         },
-        "./styles.css": "./dist/styles.css"
+        "./styles.css": "./dist/styles.css",
+        "./config": {
+            "types": "./dist/config/formConfig.d.ts",
+            "import": "./dist/config/formConfig.mjs",
+            "require": "./dist/config/formConfig.js"
+        }
     },
     "files": [
         "dist",
-        "README.md"
+        "README.md",
+        "LICENSE"
     ],
     "scripts": {
         "build": "tsup",
@@ -32,7 +38,10 @@
         "input",
         "validation",
         "typescript",
-        "forms"
+        "forms",
+        "responsive",
+        "variants",
+        "global-config"
     ],
     "repository": {
         "type": "git",
